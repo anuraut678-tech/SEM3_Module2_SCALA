@@ -1,0 +1,43 @@
+package Prac_3
+
+import scala.io.Source
+
+object Ananya_Prac_3_FrequencyDistribution {
+  def main(args: Array[String]): Unit = {
+
+    val stream = getClass.getResourceAsStream("/SuperMarket Analysis.csv")
+
+    if (stream == null) {
+      println("Error: File not found in resources folder!")
+      return
+    }
+
+    val file = Source.fromInputStream(stream)
+
+    val data = file.getLines().drop(1).flatMap { line =>
+      val cols = line.split(",")
+      cols(7).trim.toIntOption
+    }.toList
+
+    file.close()
+
+    val frequency = data.groupBy(identity)
+      .view
+      .mapValues(_.size)
+      .toSeq
+      .sortBy(_._1)                         
+
+    var cumulative = 0
+
+    println("Frequency Distribution and Cumulative Frequency")
+    println("Quantity\tFrequency\tCumulative Frequency")
+
+    frequency.foreach {
+      case (quantity, freq) =>
+        cumulative += freq
+        println(s"$quantity\t\t$freq\t\t$cumulative")
+    }
+
+    println(s"Total Records: ${data.length}")
+  }
+}
