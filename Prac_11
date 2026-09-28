@@ -1,0 +1,26 @@
+import scala.io.Source
+
+object WordFrequencyCounter {
+  def main(args: Array[String]): Unit = {
+
+    val filename = "neetu.txt"
+
+    // Read the file
+    val lines = Source.fromFile(filename).getLines().toList
+
+    // Tokenize and normalize words
+    val words = lines
+      .flatMap(_.toLowerCase.split("\\W+")) // Split on non-word characters
+      .filter(_.nonEmpty) // Remove empty tokens
+
+    // Count word frequencies
+    val wordCounts = words.groupBy(identity).view.mapValues(_.size).toMap
+
+    // Print the word frequencies
+    println("Word Frequencies:")
+    wordCounts.toSeq.sortBy(-_._2).foreach {
+      case (word, count) =>
+        println(f"$word%-15s -> $count")
+    }
+  }
+}
