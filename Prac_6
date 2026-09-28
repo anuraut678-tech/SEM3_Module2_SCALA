@@ -1,0 +1,125 @@
+package M2Prac_5
+
+import breeze.linalg._
+import breeze.numerics.sigmoid
+import breeze.optimize.{DiffFunction, minimize}
+
+object LogisticRegressionExample {
+
+  def main(args: Array[String]): Unit = {
+
+    // 1. Define the Supermarket dataset
+    // Features: Quantity and Unit Price
+    val X_train = DenseMatrix(
+      (7.0, 74.69),
+      (10.0, 55.08),
+      (5.0, 25.25),
+      (8.0, 65.89),
+      (6.0, 54.84),
+      (3.0, 35.19),
+      (9.0, 45.68),
+      (4.0, 20.36),
+      (10.0, 85.31),
+      (2.0, 15.28)
+    )
+
+    // 1 = High Sale, 0 = Low Sale
+    val y_train = DenseVector(
+      1.0, 1.0, 0.0, 1.0, 0.0,
+      0.0, 1.0, 0.0, 1.0, 0.0
+    )
+
+    val numSamples = X_train.rows
+    val numFeatures = X_train.cols
+
+    println("Supermarket Sales Dataset:")
+    println(s"Number of samples: $numSamples")
+    println(s"Number of features: $numFeatures")
+
+    // 2. Add intercept term
+    val X_with_intercept =
+      DenseMatrix.horzcat(
+        DenseMatrix.ones[Double](numSamples, 1),
+        X_train
+      )
+
+    // 3. Define logistic regression objective function
+    val objective = new DiffFunction[DenseVector[Double]] {
+
+      def calculate(w: DenseVector[Double]):
+      (Double, DenseVector[Double]) = {
+
+        // Linear combination of features and weights
+        val z = X_with_intercept * w
+
+        // Predicted probabilities
+        val predictions = DenseVector(
+          (0 until z.length)
+            .map(i => sigmoid(z(i)))
+            .toArray
+        )
+
+        // Calculate loss
+        var loss = 0.0
+
+        for (i <- 0 until numSamples) {
+
+          val p = math.max(
+            1e-10,
+            math.min(1.0 - 1e-10, predictions(i))
+          )
+
+          loss += -(y_train(i) * math.log(p) +
+            (1.0 - y_train(i)) * math.log(1.0 - p))
+        }
+
+        loss = loss / numSamples
+
+        // Calculate gradient
+        val error = DenseVector(
+          (0 until numSamples)
+            .map(i => predictions(i) - y_train(i))
+            .toArray
+        )
+
+        val gradient =
+          (X_with_intercept.t * error) * (1.0 / numSamples)
+
+        (loss, gradient)
+      }
+    }
+
+    // 4. Train the model
+    val initialWeights =
+      DenseVector.zeros[Double](numFeatures + 1)
+
+    println("\nTraining the model...")
+
+    val trainedWeights =
+      minimize(objective, initialWeights)
+
+    println("\nTrained model weights:")
+    println(s"Intercept (w0): ${trainedWeights(0)}")
+    println(s"Quantity weight (w1): ${trainedWeights(1)}")
+    println(s"Unit Price weight (w2): ${trainedWeights(2)}")
+
+    // 5. Predict a new data point
+    val newPoint =
+      DenseVector(1.0, 8.0, 60.0)
+
+    val z_new =
+      trainedWeights dot newPoint
+
+    val probability =
+      sigmoid(z_new)
+
+    val predictedClass =
+      if (probability >= 0.5) 1 else 0
+
+    println("\nPrediction for new sale:")
+    println("Quantity: 8")
+    println("Unit Price: 60.0")
+    println(s"Predicted probability: $probability")
+    println(s"Predicted class: $predictedClass")
+  }
+}
