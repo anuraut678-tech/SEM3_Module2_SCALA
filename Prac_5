@@ -1,0 +1,60 @@
+package M2Prac_5
+
+import breeze.linalg.DenseVector
+import breeze.stats.mean
+
+object SupermarketLinearRegression {
+
+  def main(args: Array[String]): Unit = {
+
+    // 1. Define the dataset
+    // X = Quantity, Y = Total
+    val x = DenseVector(7.0, 10.0, 5.0, 8.0, 6.0)
+    val y = DenseVector(548.97, 1042.65, 308.70, 840.00, 410.55)
+
+    println("Original data:")
+    println(s" x (Quantity): $x")
+    println(s" y (Total): $y")
+
+    // 2. Calculate mean
+    val xMean = mean(x)
+    val yMean = mean(y)
+
+    // 3. Calculate slope
+    var numerator = 0.0
+    var denominator = 0.0
+
+    for (i <- 0 until x.length) {
+      numerator += (x(i) - xMean) * (y(i) - yMean)
+      denominator += (x(i) - xMean) * (x(i) - xMean)
+    }
+
+    val slope = numerator / denominator
+    val intercept = yMean - slope * xMean
+
+    println("\nLinear Regression Coefficients:")
+    println(s" Intercept (c): $intercept")
+    println(s" Slope (m): $slope")
+
+    // 4. Predict Total for a new Quantity
+    val newX = 9.0
+    val predictedY = intercept + slope * newX
+
+    println(s"\nPredicting Total for Quantity = $newX:")
+    println(s" Predicted Total: $predictedY")
+
+    // 5. Calculate R-squared
+    var ssTotal = 0.0
+    var ssResidual = 0.0
+
+    for (i <- 0 until y.length) {
+      val predicted = intercept + slope * x(i)
+      ssTotal += (y(i) - yMean) * (y(i) - yMean)
+      ssResidual += (y(i) - predicted) * (y(i) - predicted)
+    }
+
+    val rSquared = 1 - (ssResidual / ssTotal)
+
+    println(s"\nModel R-squared: $rSquared")
+  }
+}
