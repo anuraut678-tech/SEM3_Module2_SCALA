@@ -1,0 +1,117 @@
+package M2Prac_8
+
+import breeze.linalg._
+
+object Ananya_M2Prac_8_KMeansExample {
+
+  def euclideanDistance(a: DenseVector[Double], b: DenseVector[Double]): Double = {
+    norm(a - b)
+  }
+
+  def main(args: Array[String]): Unit = {
+
+    val data = DenseMatrix(
+      (3.62, 8.67, -2.81, -0.45),
+      (4.54, 8.00, -4.30, -1.45),
+      (3.87, 5.98, -2.15, -0.35),
+      (4.25, 7.10, -3.20, -0.90),
+      (-2.30, -0.64, 2.23, -1.24),
+      (-1.17, -1.43, 2.52, -0.06),
+      (-1.50, -2.00, 2.80, 0.50),
+      (-2.10, -1.20, 2.40, -0.30)
+    )
+
+    val k = 2
+    val maxIterations = 100
+
+    println("Banknote Authentication Dataset")
+    println(s"Samples: ${data.rows}")
+    println(s"Features: ${data.cols}")
+
+    var centroids = DenseMatrix(
+      (3.62, 8.67, -2.81, -0.45),
+      (-2.30, -0.64, 2.23, -1.24)
+    )
+
+    var assignments = DenseVector.zeros[Int](data.rows)
+    var previousAssignments = DenseVector.fill(data.rows)(-1)
+
+    var iteration = 0
+    var converged = false
+
+    while (iteration < maxIterations && !converged) {
+
+      for (i <- 0 until data.rows) {
+
+        val point = DenseVector(
+          data(i, 0),
+          data(i, 1),
+          data(i, 2),
+          data(i, 3)
+        )
+
+        var minDistance = Double.MaxValue
+        var closestCluster = -1
+
+        for (j <- 0 until k) {
+
+          val centroid = DenseVector(
+            centroids(j, 0),
+            centroids(j, 1),
+            centroids(j, 2),
+            centroids(j, 3)
+          )
+
+          val distance = euclideanDistance(point, centroid)
+
+          if (distance < minDistance) {
+            minDistance = distance
+            closestCluster = j
+          }
+        }
+
+        assignments(i) = closestCluster
+      }
+
+      if (assignments == previousAssignments) {
+        converged = true
+      } else {
+        previousAssignments = assignments.copy
+      }
+
+      val newCentroids = DenseMatrix.zeros[Double](k, data.cols)
+      val clusterCounts = DenseVector.zeros[Int](k)
+
+      for (i <- 0 until data.rows) {
+
+        val cluster = assignments(i)
+
+        for (j <- 0 until data.cols) {
+          newCentroids(cluster, j) =
+            newCentroids(cluster, j) + data(i, j)
+        }
+
+        clusterCounts(cluster) += 1
+      }
+
+      for (i <- 0 until k) {
+
+        if (clusterCounts(i) > 0) {
+
+          for (j <- 0 until data.cols) {
+            newCentroids(i, j) =
+              newCentroids(i, j) / clusterCounts(i).toDouble
+          }
+        }
+      }
+
+      centroids = newCentroids
+      iteration += 1
+    }
+
+    println("\n--- Final Results ---")
+    println(s"K-Means converged in $iteration iterations.")
+    println(s"\nFinal Centroids:\n$centroids")
+    println(s"\nCluster Assignments:\n$assignments")
+  }
+}
