@@ -1,0 +1,65 @@
+package M2Prac_13
+
+import org.apache.spark.sql.SparkSession
+import org.apache.spark.ml.feature.VectorAssembler
+import org.apache.spark.ml.classification.LogisticRegression
+import org.apache.spark.ml.Pipeline
+
+object SparkLogisticRegression {
+
+  def main(args: Array[String]): Unit = {
+
+    val spark = SparkSession.builder()
+      .appName("Spark Logistic Regression")
+      .master("local[*]")
+      .getOrCreate()
+
+    import spark.implicits._
+
+    // Supermarket Sales Dataset
+    val data = Seq(
+      (7.0, 74.69, 1.0),
+      (10.0, 55.08, 1.0),
+      (5.0, 25.25, 0.0),
+      (8.0, 65.89, 1.0),
+      (6.0, 54.84, 0.0),
+      (3.0, 35.19, 0.0),
+      (9.0, 45.68, 1.0),
+      (4.0, 20.36, 0.0),
+      (10.0, 85.31, 1.0),
+      (2.0, 15.28, 0.0)
+    )
+
+    val df = data.toDF("Quantity", "UnitPrice", "label")
+
+    println("Original Dataset:")
+    df.show()
+
+    // Create feature vector
+    val assembler = new VectorAssembler()
+      .setInputCols(Array("Quantity", "UnitPrice"))
+      .setOutputCol("features")
+
+    // Logistic Regression
+    val lr = new LogisticRegression()
+      .setFeaturesCol("features")
+      .setLabelCol("label")
+
+    // Create Pipeline
+    val pipeline = new Pipeline()
+      .setStages(Array(assembler, lr))
+
+    // Train the model
+    val model = pipeline.fit(df)
+
+    // Make predictions
+    val predictions = model.transform(df)
+
+    println("Predictions:")
+    predictions
+      .select("Quantity", "UnitPrice", "label", "prediction")
+      .show()
+
+    spark.stop()
+  }
+}
