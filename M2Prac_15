@@ -1,0 +1,30 @@
+package M2Prac_15
+
+import scala.io.Source
+
+object Ananya_PolynomialFeatures {
+  def main(args: Array[String]): Unit = {
+
+    val file = "src/main/resources/Salary_Dataset_DataScienceLovers.csv"
+
+    val lines = Source.fromFile(file).getLines().toList
+
+    println("Salary Dataset - Polynomial Features")
+    println("------------------------------------")
+    println("Salary\tX^2\tX^3")
+
+    lines.tail.take(10).foreach { line =>
+
+      val numbers = "\\d{4,}".r.findFirstIn(line)
+
+      if (numbers.isDefined) {
+
+        val x = numbers.get.toDouble
+        val x2 = x * x
+        val x3 = x * x * x
+
+        println(f"$x%.2f\t$x2%.2f\t$x3%.2f")
+      }
+    }
+  }
+}
