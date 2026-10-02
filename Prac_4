@@ -1,0 +1,42 @@
+package M2Prac_4
+
+import scala.io.Source
+
+object Ananya_SortTop5 {
+
+  def main(args: Array[String]): Unit = {
+
+    val file = "src/main/resources/SuperMarket Analysis.csv"
+
+    val lines = Source.fromFile(file).getLines().toList
+
+    val header = lines.head.split(",", -1).map(_.trim)
+
+    val salesIndex = header.indexOf("Sales")
+
+    val data = lines.tail.flatMap { line =>
+      val columns = line.split(",", -1)
+
+      if (columns.length > salesIndex) {
+        try {
+          Some((columns, columns(salesIndex).trim.toDouble))
+        } catch {
+          case _: NumberFormatException => None
+        }
+      } else {
+        None
+      }
+    }
+
+    val top5 = data.sortBy(-_._2).take(5)
+
+    println("Top 5 Rows Based on Sales")
+    println("----------------------------------------")
+
+    top5.foreach { case (columns, sales) =>
+      println(s"Sales = $sales")
+      println(columns.mkString(", "))
+      println("----------------------------------------")
+    }
+  }
+}
