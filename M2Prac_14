@@ -1,0 +1,27 @@
+package M2Prac_14
+
+object TimeSeriesAnalysis {
+  def main(args: Array[String]): Unit = {
+
+    // Generate synthetic sales data for 30 days
+    val sales = (1 to 30).map(day => (day, 1000 + day * 50))
+
+    println("Daily Sales Data:")
+    sales.foreach { case (day, amount) =>
+      println(s"Day $day: Rs. $amount")
+    }
+
+    // Basic time series analysis
+    val totalSales = sales.map(_._2).sum
+    val averageSales = totalSales.toDouble / sales.length
+    val maximumSales = sales.map(_._2).max
+    val minimumSales = sales.map(_._2).min
+
+    println("\nTime Series Analysis:")
+    println(s"Total Sales   : Rs. $totalSales")
+    println(f"Average Sales : Rs. $averageSales%.2f")
+    println(s"Maximum Sales : Rs. $maximumSales")
+    println(s"Minimum Sales : Rs. $minimumSales")
+  }
+
+}
